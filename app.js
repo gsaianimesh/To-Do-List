@@ -29,13 +29,27 @@ const toggleTaskComplete = (index) => {
     updateTasksList();
     updateStats();
     saveTasks();
+
+    // Check if all tasks are completed after toggling the checkbox
+    const allTasksCompleted = tasks.every(task => task.completed);
+    if (allTasksCompleted) {
+        blastConfetti();
+    }
 };
 
+
 const deleteTask = (index) => {
-    tasks.splice(index, 1);
-    updateTasksList();
-    updateStats();
-    saveTasks();
+    const taskList = document.getElementById("task-list");
+    const taskItem = taskList.children[index];
+
+    // Add an exit animation before deletion
+    taskItem.classList.add("fade-out");
+    setTimeout(() => {
+        tasks.splice(index, 1);
+        updateTasksList();
+        updateStats();
+        saveTasks();
+    }, 500); // Match with CSS transition duration
 };
 
 const editTask = (index) => {
@@ -52,14 +66,25 @@ const updateStats = () => {
     const totalTasks = tasks.length;
     const progress = totalTasks ? (completedTasks / totalTasks) * 100 : 0;
     const progressBar = document.getElementById('progress');
+    const statusMessage = document.querySelector('.details p'); // Selects the status message paragraph
 
     progressBar.style.width = `${progress}%`;
     document.getElementById("numbers").innerText = `${completedTasks} / ${totalTasks}`;
 
-    if (totalTasks && completedTasks === totalTasks) {
+    // Display messages based on task count and progress
+    if (totalTasks === 0) {
+        statusMessage.innerText = "Please add your tasks";
+    } else if (completedTasks === totalTasks) {
+        statusMessage.innerText = "Keep it up!";
         blastConfetti();
+    } else if (completedTasks >= totalTasks / 2) {
+        statusMessage.innerText = "Good Job!";
+    } else {
+        statusMessage.innerText = "Keep working";
     }
 };
+
+
 
 const updateTasksList = () => {
     const taskList = document.getElementById("task-list");
@@ -67,7 +92,7 @@ const updateTasksList = () => {
 
     tasks.forEach((task, index) => {
         const listItem = document.createElement('li');
-        listItem.classList.add('taskItem');
+        listItem.classList.add('taskItem', 'fade-in');
 
         listItem.innerHTML = `
             <div class="task ${task.completed ? 'completed' : ''}">
@@ -75,8 +100,8 @@ const updateTasksList = () => {
                 <p>${task.text}</p>
             </div>
             <div class="icons">
-                <img src="./edit.png" alt="Edit" onclick="editTask(${index})" />
-                <img src="./bin.png" alt="Delete" onclick="deleteTask(${index})" />
+                <img src="./img/edit.png" alt="Edit" onclick="editTask(${index})" />
+                <img src="./img/bin.png" alt="Delete" onclick="deleteTask(${index})" />
             </div>
         `;
         
